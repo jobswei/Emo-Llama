@@ -246,7 +246,8 @@ class LazySupervisedDataset(Dataset):
         if osp.isfile(data_path):
             self.loaded_data.extend(load_json(data_path))
         else:
-            for path in data_path:
+            for file in os.listdir(data_path):
+                path = osp.join(data_path,file)
                 self.loaded_data.extend(load_json(path))
     def __len__(self):
         return len(self.loaded_data)

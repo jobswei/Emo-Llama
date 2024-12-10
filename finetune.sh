@@ -1,15 +1,15 @@
 
 
-python little_nurse/finetune.py \
+python finetune.py \
     --model_path "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-mtcv/weiziyu/Checkpoints/Llama-2-7b-chat-hf" \
-    --data_path "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-mtcv/weiziyu/PaddleNLP/Data/datasets/aiwei.json" \
-    --output_dir "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-mtcv/weiziyu/PaddleNLP/outputs/aiwei_lora_64" \
+    --data_path "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-mtcv/weiziyu/Emo-Llama/Data/new_formated_data" \
+    --output_dir "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-mtcv/weiziyu/PaddleNLP/outputs/aiwei_huge" \
     --lora_enable "True" \
-    --lora_r "32" \
-    --lora_alpha "64" \
+    --lora_r "64" \
+    --lora_alpha "128" \
     --bf16 "True" \
     --tf32 "True" \
-    --per_device_train_batch_size "4" \
+    --per_device_train_batch_size "8`" \
     --gradient_accumulation_steps "1" \
     --per_device_eval_batch_size "1" \
     --num_train_epochs "1" \
