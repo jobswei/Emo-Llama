@@ -6,7 +6,6 @@ from typing import *
 import copy
 import torch
 from torch.utils.data import Dataset
-import deepspeed
 import transformers
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from arguments import *
@@ -208,7 +207,7 @@ def preprocess_llama_3(
                 content = conv["value"]
 
             role =  roles.get(role, role)
-            
+
             conv = [{"role" : role, "content" : content}]
             # First is bos token we don't need here
             encode_id = tokenizer.apply_chat_template(conv)[1:]
@@ -217,7 +216,7 @@ def preprocess_llama_3(
                 target += [IGNORE_INDEX] * len(encode_id)
             else:
                 target += encode_id
-        
+
         assert len(input_id) == len(target), f"{len(input_id)} != {len(target)}"
         for idx, encode_id in enumerate(input_id):
             if encode_id in unmask_tokens_idx:
@@ -241,7 +240,7 @@ class LazySupervisedDataset(Dataset):
         self.loaded_data = []
         self.load_data(data_path)
         self.loaded_data = self.loaded_data
-    
+
     def load_data(self, data_path):
         if osp.isfile(data_path):
             self.loaded_data.extend(load_json(data_path))
@@ -265,7 +264,7 @@ class LazySupervisedDataset(Dataset):
         source = [conversations]
         data_tensor = preprocess_llama_2(source,self.tokenizer,system_message=system)
         return data_tensor
-                
+
 @dataclass
 class DataCollatorForSupervisedDataset(object):
     """Collate examples for supervised fine-tuning."""
@@ -319,11 +318,11 @@ def train():
         rank0_print(f"data_args = {vars(data_args)}\n\n")
         rank0_print(f"training_args = {vars(training_args)}\n\n")
         # rank0_print(f"evaluation_args = {vars(evaluation_args)}\n\n")
-        
+
     local_rank = training_args.local_rank
     compute_dtype = torch.float16 if training_args.fp16 else (torch.bfloat16 if training_args.bf16 else torch.float32)
-    
-    model = AutoModelForCausalLM.from_pretrained(model_args.model_path,                    
+
+    model = AutoModelForCausalLM.from_pretrained(model_args.model_path,
                     cache_dir=training_args.cache_dir,
                     attn_implementation=training_args.attn_implementation,
                     torch_dtype=(torch.bfloat16 if training_args.bf16 else None),
@@ -332,7 +331,7 @@ def train():
     tokenizer.pad_token = "[PAD]"
     tokenizer.model_max_length = training_args.model_max_length
     model.config.use_cache = True
-    
+
     if training_args.gradient_checkpointing:
         if hasattr(model, "enable_input_require_grads"):
             model.enable_input_require_grads()
@@ -344,7 +343,7 @@ def train():
             model.get_input_embeddings().register_forward_hook(make_inputs_require_grad)
     if training_args.lora_enable:
         from peft import LoraConfig, get_peft_model, PeftModel
-        
+
         lora_config = LoraConfig(
             r=training_args.lora_r,
             lora_alpha=training_args.lora_alpha,
